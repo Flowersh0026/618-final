@@ -1,2 +1,14 @@
 theme: jekyll-theme-cayman
 title: "Concurrent Distributed Dynamic Sized Worker Queue"
+
+# Collections
+collections:
+  proposal:
+    output: true
+    permalink: /:collection/:path/
+  checkpoint:
+    output: true
+    permalink: /:collection/:path/
+  finalreport:
+    output: true
+    permalink: /:collection/:path/
