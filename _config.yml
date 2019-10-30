@@ -1,2 +1,2 @@
 theme: jekyll-theme-cayman
-title: "Lock-Free Dynamic Sized Queue"
+title: "Concurrent Distributed Dynamic Sized Worker Queue"
