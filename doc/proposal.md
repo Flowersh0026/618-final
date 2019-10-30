@@ -1,3 +1,7 @@
+## URL
+
+https://flowersh0026.github.io/618-final/
+
 ## Summary
 
 We plan to start with implementing a concurrent dynamic sized queue in 4 different synchronization methods and evaluating their performance. The four versions include: coarse-grained locked queue, fine-grained locked queue, lock-free queue using CAS instructions, lock-free queue using transactional memory. Then we would further develop the concurrent queues into distributed versions, and do further performance evaluation there.
