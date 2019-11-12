@@ -15,6 +15,9 @@ set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Disable benchmark tests" FORCE)
 add_subdirectory(third_party/benchmark)
 include_directories(third_party/benchmark/include)
 
+# concurrent queue headers
+include_directories(include)
+
 # unittest executable
 add_executable(unittest test/sample_test.cc)
 target_link_libraries(unittest gtest gtest_main)
