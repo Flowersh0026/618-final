@@ -18,6 +18,9 @@ include_directories(third_party/benchmark/include)
 # concurrent queue headers
 include_directories(include)
 
+# TSX support
+add_compile_options(-mrtm)
+
 # unittest executable
 add_executable(unittest test/sample_test.cc)
 target_link_libraries(unittest gtest gtest_main)
