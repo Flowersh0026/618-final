@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # import googletest
+add_compile_options(-Wno-deprecated-copy)
 add_subdirectory(third_party/googletest)
 include_directories(${gtest_SOURCE_DIR}/include)
 
