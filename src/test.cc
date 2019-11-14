@@ -10,13 +10,16 @@
 
 class ConcurrentQueueTest
     : public ::testing::TestWithParam<
-          std::tuple<size_t /* data size */, size_t /* thread num */>> {
+          std::tuple<size_t /* data size */, size_t /* producer num */,
+                     size_t /* consumer num */>> {
  public:
   ConcurrentQueueTest()
       : size_(std::get<0>(GetParam())),
-        thread_num_(std::get<1>(GetParam())),
-        index_(0),
+        producer_num_(std::get<1>(GetParam())),
+        consumer_num_(std::get<2>(GetParam())),
+        input_index_(0),
         input_(size_),
+        output_index_(0),
         output_(size_) {}
 
   // prepare random input data
@@ -29,12 +32,17 @@ class ConcurrentQueueTest
     }
   }
 
-  static void RunThread(Queue<int>* queue, const std::vector<int>* input,
-                        std::atomic<size_t>* index, size_t size,
-                        std::vector<int>* output) {
-    for (size_t i = (*index)++; i < size; i = (*index)++) {
+  static void RunProducer(Queue<int>* queue, const std::vector<int>* input,
+                          std::atomic<size_t>* input_index, size_t size) {
+    for (size_t i = (*input_index)++; i < size; i = (*input_index)++) {
       int data = (*input)[i];
       queue->Push(data);
+    }
+  }
+
+  static void RunConsumer(Queue<int>* queue, std::vector<int>* output,
+                          std::atomic<size_t>* output_index, size_t size) {
+    for (size_t i = (*output_index)++; i < size; i = (*output_index)++) {
       while (true) {
         std::optional<int> opt = queue->Pop();
         if (opt) {
@@ -46,18 +54,24 @@ class ConcurrentQueueTest
   }
 
   void RunTest(Queue<int>* queue) {
-    if (thread_num_ == 0) {
-      RunThread(queue, &input_, &index_, size_, &output_);
-    } else {
-      for (size_t i = 0; i < thread_num_; ++i) {
-        threads_.emplace_back(ConcurrentQueueTest::RunThread, queue, &input_,
-                              &index_, size_, &output_);
-      }
-      for (size_t i = 0; i < thread_num_; ++i) {
-        threads_[i].join();
-      }
-      threads_.clear();
+    ASSERT_GT(producer_num_, 0);
+    ASSERT_GT(consumer_num_, 0);
+    for (size_t i = 0; i < consumer_num_; ++i) {
+      consumers_.emplace_back(ConcurrentQueueTest::RunConsumer, queue, &output_,
+                              &output_index_, size_);
     }
+    for (size_t i = 0; i < producer_num_; ++i) {
+      producers_.emplace_back(ConcurrentQueueTest::RunProducer, queue, &input_,
+                              &input_index_, size_);
+    }
+    for (size_t i = 0; i < consumer_num_; ++i) {
+      consumers_[i].join();
+    }
+    for (size_t i = 0; i < producer_num_; ++i) {
+      producers_[i].join();
+    }
+    producers_.clear();
+    consumers_.clear();
     std::sort(input_.begin(), input_.end());
     std::sort(output_.begin(), output_.end());
     EXPECT_THAT(output_, ::testing::ElementsAreArray(input_));
@@ -65,13 +79,17 @@ class ConcurrentQueueTest
 
  private:
   const size_t size_;
-  const size_t thread_num_;
+  const size_t producer_num_;
+  const size_t consumer_num_;
 
-  std::atomic<size_t> index_;
+  std::atomic<size_t> input_index_;
   std::vector<int> input_;
+
+  std::atomic<size_t> output_index_;
   std::vector<int> output_;
 
-  std::vector<std::thread> threads_;
+  std::vector<std::thread> producers_;
+  std::vector<std::thread> consumers_;
 };
 
 TEST_P(ConcurrentQueueTest, TmQueueTest) {
@@ -81,4 +99,5 @@ TEST_P(ConcurrentQueueTest, TmQueueTest) {
 
 INSTANTIATE_TEST_SUITE_P(ConcurrentQueueTest, ConcurrentQueueTest,
                          ::testing::Combine(::testing::Values(1000),
-                                            ::testing::Values(2)));
+                                            ::testing::Values(1),
+                                            ::testing::Values(1)));
