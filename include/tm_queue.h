@@ -1,9 +1,10 @@
 #ifndef _TM_QUEUE_H_
 #define _TM_QUEUE_H_
 
-#include <immintrin.h>
-
 #include "queue.h"
+
+#include <immintrin.h>
+#include <mutex>
 
 template <typename T>
 class TmQueue : public Queue<T> {
@@ -52,29 +53,32 @@ class TmQueue : public Queue<T> {
       if (head_locked_) {
         _xabort(_XABORT_EXPLICIT);  // will go to fallback path
       }
-      Node* new_head = head_->next;
-      std::optional<T> opt;
-      if (new_head) {
-        opt = new_head->value;
-        Node* node = head_;
-        head_ = new_head;
-        delete node;
+      std::optional<T> optval;
+      Node* node = nullptr;
+      Node* next = head_->next;
+      if (next) {
+        optval = std::move(next->value);
+        node = head_;
+        head_ = next;
       }
       _xend();
-      return opt;
+      delete node;
+      return optval;
     } else {  // fallback path
-      std::lock_guard<std::mutex> lock(head_mut_);
+      std::unique_lock<std::mutex> lock(head_mut_);
       head_locked_ = true;
-      Node* new_head = head_->next;
-      std::optional<T> opt;
-      if (new_head) {
-        opt = new_head->value;
-        Node* node = head_;
-        head_ = new_head;
-        delete node;
+      std::optional<T> optval;
+      Node* node = nullptr;
+      Node* next = head_->next;
+      if (next) {
+        optval = std::move(next->value);
+        node = head_;
+        head_ = next;
       }
       head_locked_ = false;
-      return opt;
+      lock.unlock();
+      delete node;
+      return optval;
     }
   }
 

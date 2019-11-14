@@ -10,6 +10,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 add_compile_options(-Wno-deprecated-copy)
 add_subdirectory(third_party/googletest)
 include_directories(${gtest_SOURCE_DIR}/include)
+include_directories(${gmock_SOURCE_DIR}/include)
 
 # import google benchmark
 set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Disable benchmark tests" FORCE)
@@ -23,7 +24,7 @@ include_directories(include)
 add_compile_options(-mrtm)
 
 # unittest executable
-add_executable(unittest test/sample_test.cc)
+add_executable(unittest src/test.cc)
 target_link_libraries(unittest gtest gtest_main)
 
 # benchmark executable
