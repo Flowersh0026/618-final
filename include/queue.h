@@ -9,6 +9,7 @@ class Queue {
   Queue() = default;
   virtual ~Queue() = default;
 
+  virtual void Push(const T& value) = 0;
   virtual void Push(T&& value) = 0;
   virtual std::optional<T> Pop() = 0;
 };

@@ -13,8 +13,11 @@ class ConcurrentQueueTest
           std::tuple<size_t /* data size */, size_t /* thread num */>> {
  public:
   ConcurrentQueueTest()
-      : size_(std::get<0>(GetParam())), thread_num_(std::get<1>(GetParam())),
-        index_(0), input_(size_), output_(size_) {}
+      : size_(std::get<0>(GetParam())),
+        thread_num_(std::get<1>(GetParam())),
+        index_(0),
+        input_(size_),
+        output_(size_) {}
 
   // prepare random input data
   void SetUp() override {
@@ -31,7 +34,7 @@ class ConcurrentQueueTest
                         std::vector<int>* output) {
     for (size_t i = (*index)++; i < size; i = (*index)++) {
       int data = (*input)[i];
-      queue->Push(std::move(data));
+      queue->Push(data);
       while (true) {
         std::optional<int> opt = queue->Pop();
         if (opt) {
@@ -77,5 +80,5 @@ TEST_P(ConcurrentQueueTest, TmQueueTest) {
 }
 
 INSTANTIATE_TEST_SUITE_P(ConcurrentQueueTest, ConcurrentQueueTest,
-                         ::testing::Combine(::testing::Values(100),
-                                            ::testing::Values(0)));
+                         ::testing::Combine(::testing::Values(1000),
+                                            ::testing::Values(2)));
