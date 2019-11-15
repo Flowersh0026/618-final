@@ -28,13 +28,14 @@ class LockQueue : public Queue<T> {
 
   virtual optional<T> Pop() {
     lock_guard<mutex> lock(mu_);
-    if (count_.Load(MemoryOrder::RELAXED) == 0) return;
-    auto ret = head_->value_;
+    std::optional<T> optval;
+    if (count_.Load(MemoryOrder::RELAXED) == 0) return optval;
+    optval = move(head_->value_);
     auto old_head = head_;
     head_ = head_->next_;
     delete old_head;
     count_.store(count_.load(std::memory_order_relaxed) - 1, std::memory_order_relaxed);
-    return ret;
+    return optval;
   }
 
  private:
