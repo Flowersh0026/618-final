@@ -98,6 +98,6 @@ TEST_P(ConcurrentQueueTest, TmQueueTest) {
 }
 
 INSTANTIATE_TEST_SUITE_P(ConcurrentQueueTest, ConcurrentQueueTest,
-                         ::testing::Combine(::testing::Values(1000),
-                                            ::testing::Values(1),
-                                            ::testing::Values(1)));
+                         ::testing::Combine(::testing::Values(1000000),
+                                            ::testing::Values(100),
+                                            ::testing::Values(100)));

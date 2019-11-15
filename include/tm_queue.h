@@ -4,6 +4,7 @@
 #include "queue.h"
 
 #include <immintrin.h>
+#include <atomic>
 #include <mutex>
 
 template <typename T>
@@ -40,13 +41,14 @@ class TmQueue : public Queue<T> {
   }
 
   virtual std::optional<T> Pop() override {
+    std::optional<T> optval;
+    Node* node = nullptr;
+
     unsigned status = _xbegin();
     if (status == _XBEGIN_STARTED) {
       if (head_locked_) {
         _xabort(_XABORT_EXPLICIT);  // will go to fallback path
       }
-      std::optional<T> optval;
-      Node* node = nullptr;
       Node* next = head_->next;
       if (next) {
         optval = std::move(next->value);
@@ -54,13 +56,9 @@ class TmQueue : public Queue<T> {
         head_ = next;
       }
       _xend();
-      delete node;
-      return optval;
     } else {  // fallback path
       std::unique_lock<std::mutex> lock(head_mut_);
       head_locked_ = true;
-      std::optional<T> optval;
-      Node* node = nullptr;
       Node* next = head_->next;
       if (next) {
         optval = std::move(next->value);
@@ -68,10 +66,10 @@ class TmQueue : public Queue<T> {
         head_ = next;
       }
       head_locked_ = false;
-      lock.unlock();
-      delete node;
-      return optval;
     }
+
+    delete node;
+    return optval;
   }
 
  private:
@@ -83,9 +81,10 @@ class TmQueue : public Queue<T> {
   Node* head_;
   Node* tail_;
 
-  bool head_locked_;
-  bool tail_locked_;
+  std::atomic<bool> head_locked_;
   std::mutex head_mut_;
+
+  std::atomic<bool> tail_locked_;
   std::mutex tail_mut_;
 
   void PushInternal(Node* node) {
