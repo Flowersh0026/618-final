@@ -1,5 +1,5 @@
-#ifndef _TM_QUEUE_H_
-#define _TM_QUEUE_H_
+#ifndef _RTM_QUEUE_H_
+#define _RTM_QUEUE_H_
 
 #include "queue.h"
 
@@ -8,9 +8,9 @@
 #include <mutex>
 
 template <typename T>
-class TmQueue : public Queue<T> {
+class RtmQueue : public Queue<T> {
  public:
-  TmQueue()
+  RtmQueue()
       : head_(new Node()),
         tail_(head_),
         head_locked_(false),
@@ -18,7 +18,7 @@ class TmQueue : public Queue<T> {
     head_->next = nullptr;
   }
 
-  virtual ~TmQueue() {
+  virtual ~RtmQueue() {
     while (head_) {
       Node* node = head_;
       head_ = head_->next;
@@ -106,4 +106,4 @@ class TmQueue : public Queue<T> {
   }
 };
 
-#endif  // _TM_QUEUE_H_
+#endif  // _RTM_QUEUE_H_

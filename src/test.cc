@@ -1,5 +1,5 @@
 #include "queue.h"
-#include "tm_queue.h"
+#include "rtm_queue.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -92,12 +92,12 @@ class ConcurrentQueueTest
   std::vector<std::thread> consumers_;
 };
 
-TEST_P(ConcurrentQueueTest, TmQueueTest) {
-  TmQueue<int> queue;
+TEST_P(ConcurrentQueueTest, RtmQueueTest) {
+  RtmQueue<int> queue;
   RunTest(&queue);
 }
 
 INSTANTIATE_TEST_SUITE_P(ConcurrentQueueTest, ConcurrentQueueTest,
-                         ::testing::Combine(::testing::Values(1000000),
-                                            ::testing::Values(100),
-                                            ::testing::Values(100)));
+                         ::testing::Combine(::testing::Values(1, 1000, 1000000),
+                                            ::testing::Values(1, 32),
+                                            ::testing::Values(1, 32)));
