@@ -78,6 +78,7 @@ class RtmQueue : public Queue<T> {
     Node* next;
   };
 
+  // TODO: align to cacheline to avoid false sharing
   Node* head_;
   Node* tail_;
 
