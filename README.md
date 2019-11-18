@@ -10,7 +10,7 @@ Yunjia Wang (yunjiaw@), Jiaan Dai (jiaand@)
 * [Proposal PDF](doc/proposal.pdf)
 * [Checkpoint](doc/checkpoint)
 * [Checkpoint PDF](doc/checkpoint.pdf)
-* [Final Report](https://flowersh0026.github.io/618-final/pages/final.html)
+* [Final Report](doc/final)
 
 ### Schedule
 
