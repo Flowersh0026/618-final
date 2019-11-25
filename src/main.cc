@@ -1,41 +1,13 @@
 #include <benchmark/benchmark.h>
-#include <string.h>
-#include <unistd.h>
+
+#include <boost/lockfree/queue.hpp>
 
 #include "cas_queue.h"
+#include "coarse_lock_queue.h"
+#include "queue.h"
+#include "rtm_queue.h"
 
 using namespace std;
-
-// template <typename... Args>
-// string StrFormat(const char* format, Args... args) {
-//   int size = snprintf(NULL, 0, format, args...);
-//   string buf(size + 1, '\0');
-//   snprintf(&buf[0], buf.size(), format, args...);
-//   return buf;
-// }
-
-// static constexpr const char* key = "e";
-// static constexpr double value = 2.718281828459;
-// static constexpr const char* format = "%s: %.6f\n";
-
-// static void StrFormatBenchmark(benchmark::State& state) {
-//   for (auto _ : state) {
-//     string s = StrFormat(format, key, value);
-//     assert(s.size() > 0);
-//     usleep(10);  // 10 us
-//   }
-// }
-// BENCHMARK(StrFormatBenchmark);
-
-// static void SnprintfBenchmark(benchmark::State& state) {
-//   for (auto _ : state) {
-//     char buf[4096];
-//     int ret = snprintf(buf, 4096, format, key, value);
-//     assert(ret > 0);
-//     usleep(10);  // 10 us
-//   }
-// }
-// BENCHMARK(SnprintfBenchmark);
 
 static void CASQueuePushBenchmark(benchmark::State& state) {
   static CasQueue<int>* casq = nullptr;
@@ -43,7 +15,7 @@ static void CASQueuePushBenchmark(benchmark::State& state) {
   if (state.thread_index == 0) {
     casq = new CasQueue<int>();
   }
-  
+
   for (auto _ : state) {
     casq->Push(0);
   }
@@ -53,11 +25,12 @@ static void CASQueuePushBenchmark(benchmark::State& state) {
     delete casq;
   }
 }
+
 BENCHMARK(CASQueuePushBenchmark)->ThreadRange(1, 256);
 
 static void CASQueuePopBenchmark(benchmark::State& state) {
   static CasQueue<int>* casq = nullptr;
-  
+
   if (state.thread_index == 0) {
     const int num_items = state.range(0);
     casq = new CasQueue<int>();
@@ -77,4 +50,68 @@ static void CASQueuePopBenchmark(benchmark::State& state) {
   }
 }
 
-BENCHMARK(CASQueuePushBenchmark)->ThreadRange(1, 256)->Arg(256000);
+BENCHMARK(CASQueuePopBenchmark)->ThreadRange(1, 256)->Arg(256000);
+
+// multi-producer multi-consumer benchmark
+template <class T>
+void MpmcBenchmark(benchmark::State& state) {
+  // set up
+  static Queue<int>* queue = nullptr;
+  if (state.thread_index == 0) {
+    queue = new T();
+  }
+
+  // main benchmark
+  if (state.thread_index % 2 == 0) {  // producer
+    for (auto _ : state) {
+      int data = 1;
+      benchmark::DoNotOptimize(data);
+      queue->Push(data);
+    }
+  } else {  // consumer
+    for (auto _ : state) {
+      std::optional<int> opt = queue->Pop();
+      benchmark::DoNotOptimize(opt);
+    }
+  }
+
+  // tear down
+  if (state.thread_index == 0) {
+    delete queue;
+  }
+}
+
+BENCHMARK_TEMPLATE(MpmcBenchmark, CoarseLockQueue<int>)
+    ->DenseThreadRange(2, 32, 2);
+BENCHMARK_TEMPLATE(MpmcBenchmark, RtmQueue<int>)->DenseThreadRange(2, 32, 2);
+
+// boost adapter
+void BoostMpmcBenchmark(benchmark::State& state) {
+  // set up
+  static boost::lockfree::queue<int>* queue = nullptr;
+  if (state.thread_index == 0) {
+    queue = new boost::lockfree::queue<int>();
+  }
+
+  // main benchmark
+  if (state.thread_index % 2 == 0) {  // producer
+    for (auto _ : state) {
+      int data = 1;
+      benchmark::DoNotOptimize(data);
+      queue->push(data);
+    }
+  } else {  // consumer
+    for (auto _ : state) {
+      int data;
+      bool ok = queue->pop(data);
+      benchmark::DoNotOptimize(ok);
+    }
+  }
+
+  // tear down
+  if (state.thread_index == 0) {
+    delete queue;
+  }
+}
+
+BENCHMARK(BoostMpmcBenchmark)->DenseThreadRange(2, 32, 2);
