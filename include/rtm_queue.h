@@ -30,14 +30,14 @@ class RtmQueue : public Queue<T> {
     Node* node = new Node();
     node->value = value;
     node->next = nullptr;
-    PushInternal(node);
+    PushImpl(node);
   }
 
   virtual void Push(T&& value) override {
     Node* node = new Node();
     node->value = std::move(value);
     node->next = nullptr;
-    PushInternal(node);
+    PushImpl(node);
   }
 
   virtual std::optional<T> Pop() override {
@@ -88,7 +88,7 @@ class RtmQueue : public Queue<T> {
   std::atomic<bool> tail_locked_;
   std::mutex tail_mut_;
 
-  void PushInternal(Node* node) {
+  void PushImpl(Node* node) {
     unsigned status = _xbegin();
     if (status == _XBEGIN_STARTED) {
       if (tail_locked_) {
