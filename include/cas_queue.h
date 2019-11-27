@@ -4,6 +4,7 @@
 #include "queue.h"
 #include <mutex>
 #include <atomic>
+#include <unordered_set>
 
 using namespace std;
 
@@ -12,6 +13,14 @@ class CasQueue : public Queue<T> {
  public:
   CasQueue() : head_(nullptr), tail_(nullptr) {
     // fprintf(stderr, "%s\n", "\n Initialize \n");
+  }
+
+  ~CasQueue() {
+    // fprintf(stderr, "delete \n");
+    // for (auto n : garbage_list_) {
+      
+      // delete n;
+    // }
   }
 
   virtual void Push(const T& value) {
@@ -81,7 +90,8 @@ class CasQueue : public Queue<T> {
         // fprintf(stderr, "2 - curr_head = %d\n", curr_head);
         optval = move(curr_head->value_);
         // fprintf(stderr, "deleting %d\n", curr_head);
-        delete curr_head;
+        // delete curr_head;
+        // garbage_list_.insert(curr_head);
         // curr_head = nullptr;
         
         // atomic_fetch_sub_explicit(&count_, 1, memory_order_release);
@@ -105,6 +115,8 @@ class CasQueue : public Queue<T> {
 
   atomic<Node*> head_;
   atomic<Node*> tail_;
+
+  // unordered_set<Node*> garbage_list_;
 
 };
 
