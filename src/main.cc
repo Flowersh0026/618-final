@@ -94,7 +94,7 @@ void BoostMpmcBenchmark(benchmark::State& state) {
   // set up
   static boost::lockfree::queue<int>* queue = nullptr;
   if (state.thread_index == 0) {
-    queue = new boost::lockfree::queue<int>();
+    queue = new boost::lockfree::queue<int>(0);
   }
 
   // main benchmark
