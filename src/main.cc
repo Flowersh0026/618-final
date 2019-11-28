@@ -3,7 +3,7 @@
 #include <boost/lockfree/queue.hpp>
 
 #include "cas_queue.h"
-#include "coarse_lock_queue.h"
+#include "fine_lock_queue.h"
 #include "queue.h"
 #include "rtm_queue.h"
 
@@ -81,7 +81,7 @@ void MpmcBenchmark(benchmark::State& state) {
   }
 }
 
-BENCHMARK_TEMPLATE(MpmcBenchmark, CoarseLockQueue<int>)
+BENCHMARK_TEMPLATE(MpmcBenchmark, FineLockQueue<int>)
     ->DenseThreadRange(2, 32, 2);
 BENCHMARK_TEMPLATE(MpmcBenchmark, RtmQueue<int>)->DenseThreadRange(2, 32, 2);
 
