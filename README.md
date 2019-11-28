@@ -21,11 +21,11 @@ Yunjia Wang (yunjiaw@), Jiaan Dai (jiaand@)
 | 11/11 -- 11/17 | Implement the lock-free queue using CAS                     | In progress |
 |                | Implement the lock-free queue using RTM                     | Done        |
 |                | Finish checkpoint report                                    | Done        |
-| 11/18 -- 11/24 | Implement the fine-grained locked queue (Yunjia)            | In progress |
+| 11/18 -- 11/24 | Implement the coarse-grained locked queue (Yunjia)          | In progress |
 |                | Implement the lock-free queue using CAS (cont'd) (Yunjia)   | In progress |
 |                | Verify correctness of all concurrent queues (Jiaan)         |             |
 |                | Explore the implementations of distributed versions (Both)  | Done        |
-| 11/25 -- 12/01 | Implement the coarse-grained locked queue (Jiaan)           | In progress |
+| 11/25 -- 12/01 | Implement the fine-grained locked queue (Jiaan)             | Done        |
 |                | Implement the distributed versions (Both)                   |             |
 |                | Optimize lock-free concurrent queues (Both)                 |             |
 | 12/02 -- 12/08 | Benchmark and performance analysis (Both)                   |             |
