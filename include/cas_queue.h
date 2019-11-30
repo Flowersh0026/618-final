@@ -18,13 +18,23 @@ class CasQueue : public Queue<T> {
   ~CasQueue() {
     // fprintf(stderr, "delete \n");
     // for (auto n : garbage_list_) {
-      
+
       // delete n;
     // }
   }
 
+  // BUG
+  //
+  // | Program state            | Thread 0               | Thread 1               |
+  // |--------------------------|------------------------|------------------------|
+  // | head = NULL, tail = NULL |                        |                        |
+  // | head = NULL, tail = new1 | CAS(tail, curr1, new1) |                        |
+  // | head = NULL, tail = new2 |                        | CAS(tail, curr2, new2) |
+  // | head = new2, tail = new2 |                        | CAS(head, NULL, new2)  |
+  // | head = new2, tail = new2 | CAS(head, NULL, new1)  |                        | <- CAS fail
+  // |                          | Push ends, new1 lost   | Push ends              |
   virtual void Push(const T& value) {
-    
+
     auto new_tail = new Node(value);
     Node* curr_tail;
     while (1) {
@@ -44,14 +54,14 @@ class CasQueue : public Queue<T> {
         // } else {
           curr_tail->next_ = new_tail;
         }
-        
-        
+
+
         // atomic_fetch_add_explicit(&count_, 1, std::memory_order_release);
         count_.fetch_add(1, std::memory_order_release);
         // fprintf(stderr, "push, curr_tail = %d, Push %d at %d, Queue size %d \n", curr_tail, value, new_tail, count_.load(std::memory_order_acquire));
         break;
       }
-      
+
     }
   }
 
@@ -67,7 +77,7 @@ class CasQueue : public Queue<T> {
     tim.tv_nsec = 500;
 
     while (1) {
-      
+
       if (count_.load(std::memory_order_acquire) <= 0) {
         // fprintf(stderr, "%s\n", "Returned");
         return optval;
@@ -93,7 +103,7 @@ class CasQueue : public Queue<T> {
         // delete curr_head;
         // garbage_list_.insert(curr_head);
         // curr_head = nullptr;
-        
+
         // atomic_fetch_sub_explicit(&count_, 1, memory_order_release);
         count_.fetch_sub(1, std::memory_order_release);
         // fprintf(stderr, "pop, count down to %d new head = %d tail %d \n", count_.load(std::memory_order_relaxed), head_.load(std::memory_order_acquire), tail_.load(std::memory_order_acquire));
