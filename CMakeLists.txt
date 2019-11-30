@@ -27,6 +27,9 @@ add_compile_options(-mrtm)
 add_executable(unittest src/test.cc)
 target_link_libraries(unittest gtest gtest_main)
 
+# optimizations
+add_compile_definitions(ENABLE_CACHELINE_ALIGNMENT)
+
 # benchmark executable
 add_executable(run_benchmark src/main.cc)
 target_link_libraries(run_benchmark benchmark benchmark_main)

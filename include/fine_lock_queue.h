@@ -47,17 +47,16 @@ class FineLockQueue : public Queue<T> {
   }
 
  private:
-  struct Node {
+  struct ALIGNED Node {
     T value;
     Node* next;
   };
 
-  // TODO: align to cache line
-  Node* head_;
-  Node* tail_;
+  ALIGNED Node* head_;
+  ALIGNED Node* tail_;
 
-  std::mutex head_mut_;
-  std::mutex tail_mut_;
+  ALIGNED std::mutex head_mut_;
+  ALIGNED std::mutex tail_mut_;
 
   void PushImpl(Node* node) {
     std::lock_guard<std::mutex> lock(tail_mut_);
