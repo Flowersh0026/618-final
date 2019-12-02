@@ -23,6 +23,12 @@ include_directories(include)
 # TSX support
 add_compile_options(-mrtm)
 
+# double-word CAS support
+# Note: libatomic detects CPU at runtime (dynamic link time), and will use the
+#       cmpxchg16b ver if supported.
+# Ref: https://stackoverflow.com/questions/49848793/genuinely-test-stdatomic-is-lock-free-or-not/49848879
+add_link_options(-latomic)
+
 # unittest executable
 add_executable(unittest src/test.cc)
 target_link_libraries(unittest gtest gtest_main)

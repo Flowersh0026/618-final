@@ -3,6 +3,7 @@
 #include "boost_adapter.h"
 #include "cas_queue.h"
 #include "fine_lock_queue.h"
+#include "lock_queue.h"
 #include "queue.h"
 #include "rtm_queue.h"
 
@@ -101,6 +102,8 @@ void MpmcBenchmark(benchmark::State& state) {
   }
 }
 
-BENCHMARK_TEMPLATE(MpmcBenchmark, FineLockQueue<int>)->ThreadRange(2, 32);
-BENCHMARK_TEMPLATE(MpmcBenchmark, RtmQueue<int>)->ThreadRange(2, 32);
 BENCHMARK_TEMPLATE(MpmcBenchmark, BoostAdapter<int>)->ThreadRange(2, 32);
+BENCHMARK_TEMPLATE(MpmcBenchmark, CasQueue<int>)->ThreadRange(2, 32);
+BENCHMARK_TEMPLATE(MpmcBenchmark, FineLockQueue<int>)->ThreadRange(2, 32);
+BENCHMARK_TEMPLATE(MpmcBenchmark, LockQueue<int>)->ThreadRange(2, 32);
+BENCHMARK_TEMPLATE(MpmcBenchmark, RtmQueue<int>)->ThreadRange(2, 32);
