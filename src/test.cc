@@ -1,8 +1,13 @@
+#include "boost_adapter.h"
+#include "cas_queue.h"
+#include "fine_lock_queue.h"
+#include "lock_queue.h"
 #include "queue.h"
 #include "rtm_queue.h"
+
 // #include "coarse_lock_queue.h"
-// #include "cas_queue.h"
 #include "lock_queue.h"
+
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -29,10 +34,9 @@ class ConcurrentQueueTest
   void SetUp() override {
     std::random_device rd;
     std::mt19937 gen(rd());
-    // std::uniform_int_distribution<> dist(1, std::numeric_limits<int>::max());
+    std::uniform_int_distribution<> dist(1, std::numeric_limits<int>::max());
     for (size_t i = 0; i < size_; ++i) {
-      // input_[i] = dist(gen);
-      input_[i] = i;
+      input_[i] = dist(gen);
     }
   }
 
@@ -96,10 +100,10 @@ class ConcurrentQueueTest
   std::vector<std::thread> consumers_;
 };
 
-// TEST_P(ConcurrentQueueTest, RtmQueueTest) {
-//   RtmQueue<int> queue;
-//   RunTest(&queue);
-// }
+TEST_P(ConcurrentQueueTest, RtmQueueTest) {
+  RtmQueue<int> queue;
+  RunTest(&queue);
+}
 
 // TEST_P(ConcurrentQueueTest, CasQueueTest) {
 //   CasQueue<int> queue;
@@ -110,6 +114,18 @@ class ConcurrentQueueTest
 //   CoarseLockQueue<int> queue;
 //   RunTest(&queue);
 // }
+
+
+TEST_P(ConcurrentQueueTest, FineQueueTest) {
+  FineLockQueue<int> queue;
+  RunTest(&queue);
+}
+
+TEST_P(ConcurrentQueueTest, BoostAdapterTest) {
+  BoostAdapter<int> queue;
+  RunTest(&queue);
+}
+
 
 TEST_P(ConcurrentQueueTest, LockQueueTest) {
   LockQueue<int> queue;

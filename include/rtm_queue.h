@@ -73,20 +73,19 @@ class RtmQueue : public Queue<T> {
   }
 
  private:
-  struct Node {
+  struct ALIGNED Node {
     T value;
     Node* next;
   };
 
-  // TODO: align to cacheline to avoid false sharing
-  Node* head_;
-  Node* tail_;
+  ALIGNED Node* head_;
+  ALIGNED Node* tail_;
 
-  std::atomic<bool> head_locked_;
-  std::mutex head_mut_;
+  ALIGNED std::atomic<bool> head_locked_;
+  ALIGNED std::mutex head_mut_;
 
-  std::atomic<bool> tail_locked_;
-  std::mutex tail_mut_;
+  ALIGNED std::atomic<bool> tail_locked_;
+  ALIGNED std::mutex tail_mut_;
 
   void PushImpl(Node* node) {
     unsigned status = _xbegin();

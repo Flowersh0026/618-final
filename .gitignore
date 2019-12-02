@@ -2,4 +2,9 @@
 /cmake-build-debug/
 /cmake-build-release/
 /build/
+<<<<<<< HEAD
 sftp-config.json
+=======
+/debug/
+/release/
+>>>>>>> 706d2aa3fee33177cb9caa0d875fd0a2190dad54

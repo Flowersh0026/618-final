@@ -1,9 +1,9 @@
 #include <benchmark/benchmark.h>
 
-#include <boost/lockfree/queue.hpp>
-
+#include "boost_adapter.h"
 #include "cas_queue.h"
-// #include "coarse_lock_queue.h"
+#include "fine_lock_queue.h"
+#include "lock_queue.h"
 #include "queue.h"
 #include "rtm_queue.h"
 
@@ -26,8 +26,10 @@ static void QueuePushBenchmark(benchmark::State& state) {
     delete q;
   }
 }
-BENCHMARK_TEMPLATE(QueuePushBenchmark, RtmQueue<int>)->ThreadRange(1, 256);
-BENCHMARK_TEMPLATE(QueuePushBenchmark, CasQueue<int>)->ThreadRange(1, 256);
+
+BENCHMARK_TEMPLATE(QueuePushBenchmark, RtmQueue<int>)->ThreadRange(1, 16);
+BENCHMARK_TEMPLATE(QueuePushBenchmark, CasQueue<int>)->ThreadRange(1, 16);
+BENCHMARK_TEMPLATE(QueuePushBenchmark, BoostAdapter<int>)->ThreadRange(1, 16);
 
 template <class T>
 static void QueuePopBenchmark(benchmark::State& state) {
@@ -52,10 +54,16 @@ static void QueuePopBenchmark(benchmark::State& state) {
   }
 }
 
-BENCHMARK_TEMPLATE(QueuePopBenchmark, RtmQueue<int>)->ThreadRange(1, 256)->Arg(256000);
-BENCHMARK_TEMPLATE(QueuePopBenchmark, CasQueue<int>)->ThreadRange(1, 256)->Arg(256000);
+BENCHMARK_TEMPLATE(QueuePopBenchmark, RtmQueue<int>)
+    ->ThreadRange(1, 256)
+    ->Arg(256000);
+BENCHMARK_TEMPLATE(QueuePopBenchmark, CasQueue<int>)
+    ->ThreadRange(1, 256)
+    ->Arg(256000);
+BENCHMARK_TEMPLATE(QueuePopBenchmark, BoostAdapter<int>)
+    ->ThreadRange(1, 256)
+    ->Arg(256000);
 
-// multi-producer multi-consumer benchmark
 template <class T>
 void MpmcBenchmark(benchmark::State& state) {
   // set up
@@ -66,16 +74,26 @@ void MpmcBenchmark(benchmark::State& state) {
 
   // main benchmark
   if (state.thread_index % 2 == 0) {  // producer
+    int64_t num_push = 0;
     for (auto _ : state) {
       int data = 1;
       benchmark::DoNotOptimize(data);
       queue->Push(data);
+      ++num_push;
     }
+    state.counters["push_rate"] = benchmark::Counter(
+        static_cast<double>(num_push), benchmark::Counter::kIsRate);
   } else {  // consumer
+    int64_t num_pop = 0;
     for (auto _ : state) {
       std::optional<int> opt = queue->Pop();
-      benchmark::DoNotOptimize(opt);
+      if (opt) {
+        benchmark::DoNotOptimize(opt.value());
+        ++num_pop;
+      }
     }
+    state.counters["pop_rate"] = benchmark::Counter(
+        static_cast<double>(num_pop), benchmark::Counter::kIsRate);
   }
 
   // tear down
@@ -84,38 +102,8 @@ void MpmcBenchmark(benchmark::State& state) {
   }
 }
 
-// BENCHMARK_TEMPLATE(MpmcBenchmark, CoarseLockQueue<int>)
-    // ->DenseThreadRange(2, 32, 2);
-BENCHMARK_TEMPLATE(MpmcBenchmark, RtmQueue<int>)->ThreadRange(2, 256);
-BENCHMARK_TEMPLATE(MpmcBenchmark, CasQueue<int>)->ThreadRange(2, 256);
-
-// boost adapter
-void BoostMpmcBenchmark(benchmark::State& state) {
-  // set up
-  static boost::lockfree::queue<int>* queue = nullptr;
-  if (state.thread_index == 0) {
-    queue = new boost::lockfree::queue<int>(0);
-  }
-
-  // main benchmark
-  if (state.thread_index % 2 == 0) {  // producer
-    for (auto _ : state) {
-      int data = 1;
-      benchmark::DoNotOptimize(data);
-      queue->push(data);
-    }
-  } else {  // consumer
-    for (auto _ : state) {
-      int data;
-      bool ok = queue->pop(data);
-      benchmark::DoNotOptimize(ok);
-    }
-  }
-
-  // tear down
-  if (state.thread_index == 0) {
-    delete queue;
-  }
-}
-
-BENCHMARK(BoostMpmcBenchmark)->ThreadRange(2, 256);
+BENCHMARK_TEMPLATE(MpmcBenchmark, BoostAdapter<int>)->ThreadRange(2, 32);
+BENCHMARK_TEMPLATE(MpmcBenchmark, CasQueue<int>)->ThreadRange(2, 32);
+BENCHMARK_TEMPLATE(MpmcBenchmark, FineLockQueue<int>)->ThreadRange(2, 32);
+BENCHMARK_TEMPLATE(MpmcBenchmark, LockQueue<int>)->ThreadRange(2, 32);
+BENCHMARK_TEMPLATE(MpmcBenchmark, RtmQueue<int>)->ThreadRange(2, 32);
