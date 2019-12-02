@@ -1,7 +1,8 @@
 #include "queue.h"
 #include "rtm_queue.h"
-#include "coarse_lock_queue.h"
-
+// #include "coarse_lock_queue.h"
+// #include "cas_queue.h"
+#include "lock_queue.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -100,13 +101,18 @@ class ConcurrentQueueTest
 //   RunTest(&queue);
 // }
 
-TEST_P(ConcurrentQueueTest, CasQueueTest) {
-  CasQueue<int> queue;
-  RunTest(&queue);
-}
+// TEST_P(ConcurrentQueueTest, CasQueueTest) {
+//   CasQueue<int> queue;
+//   RunTest(&queue);
+// }
 
-TEST_P(ConcurrentQueueTest, CoarseQueueTest) {
-  CoarseLockQueue<int> queue;
+// TEST_P(ConcurrentQueueTest, CoarseQueueTest) {
+//   CoarseLockQueue<int> queue;
+//   RunTest(&queue);
+// }
+
+TEST_P(ConcurrentQueueTest, LockQueueTest) {
+  LockQueue<int> queue;
   RunTest(&queue);
 }
 
