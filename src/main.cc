@@ -7,8 +7,6 @@
 #include "queue.h"
 #include "rtm_queue.h"
 
-using namespace std;
-
 template <class T>
 static void QueuePushBenchmark(benchmark::State& state) {
   static Queue<int>* q = nullptr;
@@ -27,9 +25,9 @@ static void QueuePushBenchmark(benchmark::State& state) {
   }
 }
 
-BENCHMARK_TEMPLATE(QueuePushBenchmark, RtmQueue<int>)->ThreadRange(1, 16);
-BENCHMARK_TEMPLATE(QueuePushBenchmark, CasQueue<int>)->ThreadRange(1, 16);
-BENCHMARK_TEMPLATE(QueuePushBenchmark, BoostAdapter<int>)->ThreadRange(1, 16);
+// BENCHMARK_TEMPLATE(QueuePushBenchmark, RtmQueue<int>)->ThreadRange(1, 16);
+// BENCHMARK_TEMPLATE(QueuePushBenchmark, CasQueue<int>)->ThreadRange(1, 16);
+// BENCHMARK_TEMPLATE(QueuePushBenchmark, BoostAdapter<int>)->ThreadRange(1, 16);
 
 template <class T>
 static void QueuePopBenchmark(benchmark::State& state) {
@@ -54,15 +52,15 @@ static void QueuePopBenchmark(benchmark::State& state) {
   }
 }
 
-BENCHMARK_TEMPLATE(QueuePopBenchmark, RtmQueue<int>)
-    ->ThreadRange(1, 256)
-    ->Arg(256000);
-BENCHMARK_TEMPLATE(QueuePopBenchmark, CasQueue<int>)
-    ->ThreadRange(1, 256)
-    ->Arg(256000);
-BENCHMARK_TEMPLATE(QueuePopBenchmark, BoostAdapter<int>)
-    ->ThreadRange(1, 256)
-    ->Arg(256000);
+// BENCHMARK_TEMPLATE(QueuePopBenchmark, RtmQueue<int>)
+//     ->ThreadRange(1, 256)
+//     ->Arg(256000);
+// BENCHMARK_TEMPLATE(QueuePopBenchmark, CasQueue<int>)
+//     ->ThreadRange(1, 256)
+//     ->Arg(256000);
+// BENCHMARK_TEMPLATE(QueuePopBenchmark, BoostAdapter<int>)
+//     ->ThreadRange(1, 256)
+//     ->Arg(256000);
 
 template <class T>
 void MpmcBenchmark(benchmark::State& state) {
@@ -81,8 +79,8 @@ void MpmcBenchmark(benchmark::State& state) {
       queue->Push(data);
       ++num_push;
     }
-    state.counters["push_rate"] = benchmark::Counter(
-        static_cast<double>(num_push), benchmark::Counter::kIsRate);
+    state.counters["push_count"] =
+        benchmark::Counter(static_cast<double>(num_push));
   } else {  // consumer
     int64_t num_pop = 0;
     for (auto _ : state) {
@@ -92,8 +90,8 @@ void MpmcBenchmark(benchmark::State& state) {
         ++num_pop;
       }
     }
-    state.counters["pop_rate"] = benchmark::Counter(
-        static_cast<double>(num_pop), benchmark::Counter::kIsRate);
+    state.counters["pop_count"] =
+        benchmark::Counter(static_cast<double>(num_pop));
   }
 
   // tear down
@@ -102,8 +100,10 @@ void MpmcBenchmark(benchmark::State& state) {
   }
 }
 
-BENCHMARK_TEMPLATE(MpmcBenchmark, BoostAdapter<int>)->ThreadRange(2, 32);
-BENCHMARK_TEMPLATE(MpmcBenchmark, CasQueue<int>)->ThreadRange(2, 32);
-BENCHMARK_TEMPLATE(MpmcBenchmark, FineLockQueue<int>)->ThreadRange(2, 32);
-BENCHMARK_TEMPLATE(MpmcBenchmark, LockQueue<int>)->ThreadRange(2, 32);
-BENCHMARK_TEMPLATE(MpmcBenchmark, RtmQueue<int>)->ThreadRange(2, 32);
+BENCHMARK_TEMPLATE(MpmcBenchmark, BoostAdapter<int>)
+    ->DenseThreadRange(2, 32, 2);
+BENCHMARK_TEMPLATE(MpmcBenchmark, CasQueue<int>)->DenseThreadRange(2, 32, 2);
+BENCHMARK_TEMPLATE(MpmcBenchmark, FineLockQueue<int>)
+    ->DenseThreadRange(2, 32, 2);
+BENCHMARK_TEMPLATE(MpmcBenchmark, LockQueue<int>)->DenseThreadRange(2, 32, 2);
+BENCHMARK_TEMPLATE(MpmcBenchmark, RtmQueue<int>)->DenseThreadRange(2, 32, 2);
