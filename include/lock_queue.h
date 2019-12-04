@@ -54,7 +54,7 @@ class LockQueue : public Queue<T> {
   }
 
  private:
-  struct Node {
+  struct ALIGNED Node {
     T value_;
     Node* next_;
 
@@ -62,11 +62,11 @@ class LockQueue : public Queue<T> {
     Node(T&& value) : value_(value), next_(nullptr) {}
   };
 
-  Node* head_;
-  Node* tail_;
+  ALIGNED Node* head_;
+  ALIGNED Node* tail_;
 
-  mutex mu_;
-  atomic<int> count_;
+  ALIGNED mutex mu_;
+  ALIGNED atomic<int> count_;
 };
 
 #endif  // _LOCK_QUEUE_H_

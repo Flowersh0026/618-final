@@ -107,7 +107,7 @@ class CasQueue : public Queue<T> {
  private:
   struct Pointer;
 
-  struct Node {
+  struct ALIGNED Node {
     T value_;
     std::atomic<Pointer> next_;
 
@@ -131,10 +131,10 @@ class CasQueue : public Queue<T> {
   // confirm that we can use double-word CAS for struct Pointer
   static_assert(sizeof(Pointer) == sizeof(__int128));
 
-  atomic<int> count_{0};
+  ALIGNED atomic<int> count_{0};
 
-  atomic<Pointer> head_;
-  atomic<Pointer> tail_;
+  ALIGNED atomic<Pointer> head_;
+  ALIGNED atomic<Pointer> tail_;
 };
 
 #endif  // _CAS_QUEUE_H_
