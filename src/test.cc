@@ -159,13 +159,13 @@ TEST_F(LockFreeAllocatorTest, AllocatorTest) {
 }
 
 TEST_F(LockFreeAllocatorTest, AllocatorTraitsTest) {
-  using alloc_traits = std::allocator_traits<LockFreeAllocator<Node>>;
+  using alloc_tr = std::allocator_traits<LockFreeAllocator<Node>>;
   LockFreeAllocator<Node> alloc;
 
-  Node* p = alloc_traits::allocate(alloc, 1);
+  Node* p = alloc_tr::allocate(alloc, 1);
   ASSERT_NE(p, nullptr);
 
-  alloc_traits::construct(alloc, p);
+  alloc_tr::construct(alloc, p);
   EXPECT_EQ(p->a, 'a');
   EXPECT_EQ(p->b, 1);
   EXPECT_FLOAT_EQ(p->c, 3.14);
@@ -185,9 +185,9 @@ TEST_F(LockFreeAllocatorTest, AllocatorTraitsTest) {
   EXPECT_DOUBLE_EQ(p->d, -100.1);
   EXPECT_EQ(p->ptr, p);
 
-  alloc_traits::deallocate(alloc, p, 1);
+  alloc_tr::deallocate(alloc, p, 1);
 
-  Node* q = alloc_traits::allocate(alloc, 1);
+  Node* q = alloc_tr::allocate(alloc, 1);
   ASSERT_NE(q, nullptr);
   EXPECT_EQ(q, p);
 
@@ -198,12 +198,12 @@ TEST_F(LockFreeAllocatorTest, AllocatorTraitsTest) {
   EXPECT_NE(q->d, 4.0);
   EXPECT_NE(q->ptr, nullptr);
 
-  alloc_traits::construct(alloc, q);
+  alloc_tr::construct(alloc, q);
   EXPECT_EQ(q->a, 'a');
   EXPECT_EQ(q->b, 1);
   EXPECT_FLOAT_EQ(q->c, 3.14);
   EXPECT_DOUBLE_EQ(q->d, 4.0);
   EXPECT_EQ(q->ptr, nullptr);
 
-  alloc_traits::deallocate(alloc, q, 1);
+  alloc_tr::deallocate(alloc, q, 1);
 }
