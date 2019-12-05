@@ -56,8 +56,7 @@ class FreeList {
     }
   };
 
-  // TODO: cache line alignment
-  std::atomic<StackPtr> top_;  // put ALIGNED macro to a different header
+  ALIGNED std::atomic<StackPtr> top_;
 
   static Node* GetNext(Node* node) { return *reinterpret_cast<Node**>(node); }
 

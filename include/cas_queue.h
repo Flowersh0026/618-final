@@ -1,9 +1,9 @@
 #ifndef _CAS_QUEUE_H_
 #define _CAS_QUEUE_H_
 
-#include "queue.h"
-
 #include <atomic>
+#include "config.h"
+#include "queue.h"
 
 using namespace std;
 
