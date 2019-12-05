@@ -40,7 +40,7 @@ class FreeList {
       Node* next = GetNext(top.node);
       if (CAS(top_, top, StackPtr(next, top.tag + 1))) {
         Node* node = top.node;
-        return new (node) Node;
+        return node;
       }
     }
   }
@@ -64,11 +64,11 @@ class FreeList {
     *reinterpret_cast<Node**>(node) = next;
   }
 
-  template <typename T, typename DesiredType>
-  static bool CAS(std::atomic<T>& var, T& expected, DesiredType&& desired) {
-    return var.compare_exchange_weak(
-        expected, std::forward<DesiredType>(desired), std::memory_order_release,
-        std::memory_order_relaxed);
+  template <typename T1, typename T2>
+  static bool CAS(std::atomic<T1>& var, T1& expected, T2&& desired) {
+    return var.compare_exchange_weak(expected, std::forward<T2>(desired),
+                                     std::memory_order_release,
+                                     std::memory_order_relaxed);
   }
 };
 
