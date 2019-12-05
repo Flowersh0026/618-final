@@ -4,8 +4,6 @@
 #include "queue.h"
 
 #include <atomic>
-#include <mutex>
-#include <unordered_set>
 
 using namespace std;
 
@@ -13,9 +11,8 @@ template <typename T>
 class CasQueue : public Queue<T> {
  public:
   CasQueue()
-      : head_(Pointer(new Node(), 0)), tail_(head_.load(memory_order_relaxed)) {
-    // fprintf(stderr, "%s\n", "\n Initialize \n");
-  }
+      : head_(Pointer(new Node(), 0)),
+        tail_(head_.load(memory_order_relaxed)) {}
 
   ~CasQueue() {
     while (true) {
@@ -28,54 +25,36 @@ class CasQueue : public Queue<T> {
         break;
       }
     }
-    // fprintf(stderr, "delete \n");
-    // for (auto n : garbage_list_) {
-    //   delete n;
-    // }
   }
 
  private:
   struct Node;
 
-  // BUG
-  //
-  // | Program state            | Thread 0               | Thread 1               |
-  // |--------------------------|------------------------|------------------------|
-  // | head = NULL, tail = NULL |                        |                        |
-  // | head = NULL, tail = new1 | CAS(tail, curr1, new1) |                        |
-  // | head = NULL, tail = new2 |                        | CAS(tail, curr2, new2) |
-  // | head = new2, tail = new2 |                        | CAS(head, NULL, new2)  |
-  // | head = new2, tail = new2 | CAS(head, NULL, new1)  |                        | <- CAS fail
-  // |                          | Push ends, new1 lost   | Push ends              |
   void PushImpl(Node* new_tail) {
     Pointer curr_tail;
     while (1) {
       curr_tail = tail_.load(std::memory_order_relaxed);
       Pointer next = curr_tail.node_->next_.load(std::memory_order_relaxed);
-      // fprintf(stderr, "push, curr_tail = %d\n", curr_tail);
       if (curr_tail == tail_.load(std::memory_order_relaxed)) {
         if (next.node_ == nullptr) {
           if (curr_tail.node_->next_.compare_exchange_weak(
                   next, Pointer(new_tail, next.tag_ + 1),
-                  std::memory_order_release, std::memory_order_relaxed)) {  // commit point, append to the tail
+                  std::memory_order_release,
+                  std::memory_order_relaxed)) {  // commit point, append to tail
             break;
           }
         } else {
-          tail_.compare_exchange_weak(
-              curr_tail, Pointer(next.node_, curr_tail.tag_ + 1),
-              std::memory_order_release, std::memory_order_relaxed);  // fix tail_
+          tail_.compare_exchange_weak(curr_tail,
+                                      Pointer(next.node_, curr_tail.tag_ + 1),
+                                      std::memory_order_release,
+                                      std::memory_order_relaxed);  // fix tail_
         }
       }
     }
     tail_.compare_exchange_weak(
         curr_tail, Pointer(new_tail, curr_tail.tag_ + 1),
         std::memory_order_release, std::memory_order_relaxed);
-    // fprintf(stderr, "Pushed %d\n",value);
-    // atomic_fetch_add_explicit(&count_, 1, std::memory_order_release);
     count_.fetch_add(1, std::memory_order_release);
-    // fprintf(stderr, "push, curr_tail = %d, Push %d at %d, Queue size %d
-    // \n", curr_tail, value, new_tail,
-    // count_.load(std::memory_order_acquire));
   }
 
  public:
@@ -96,18 +75,11 @@ class CasQueue : public Queue<T> {
 
     while (1) {
       if (count_.load(std::memory_order_acquire) <= 0) {
-        // fprintf(stderr, "%s\n", "Returned");
         return std::nullopt;
       }
-      // fprintf(stderr, "Pop, Queue size %d \n",
-      // count_.load(std::memory_order_acquire));
       curr_head = head_.load(std::memory_order_relaxed);
       curr_tail = tail_.load(std::memory_order_relaxed);
       Pointer next = curr_head.node_->next_.load(std::memory_order_relaxed);
-      // fprintf(stderr, "curr_head = %d\n", curr_head);
-      // fprintf(stderr, "pop, curr_head = %d, value = %d, next = %d, tail =
-      // %d\n", curr_head, curr_head->value_, curr_head->next_,
-      // tail_.load(std::memory_order_acquire));
       if (curr_head == head_.load(std::memory_order_relaxed)) {
         if (curr_head.node_ == curr_tail.node_) {
           if (next.node_ == nullptr) {
@@ -120,13 +92,10 @@ class CasQueue : public Queue<T> {
           optval = next.node_->value_;  // copy, because the CAS may fails
           if (head_.compare_exchange_weak(
                   curr_head, Pointer(next.node_, curr_head.tag_ + 1),
-                  std::memory_order_release, std::memory_order_relaxed)) {  // commit point
-            // atomic_fetch_sub_explicit(&count_, 1, memory_order_release);
+                  std::memory_order_release,
+                  std::memory_order_relaxed)) {  // commit point
+            // add node to free list
             count_.fetch_sub(1, std::memory_order_release);
-            // fprintf(stderr, "pop, count down to %d new head = %d tail %d \n",
-            // count_.load(std::memory_order_relaxed),
-            // head_.load(std::memory_order_acquire),
-            // tail_.load(std::memory_order_acquire));
             break;
           }
         }
@@ -138,7 +107,7 @@ class CasQueue : public Queue<T> {
  private:
   struct Pointer;
 
-  struct Node {
+  struct ALIGNED Node {
     T value_;
     std::atomic<Pointer> next_;
 
@@ -162,12 +131,10 @@ class CasQueue : public Queue<T> {
   // confirm that we can use double-word CAS for struct Pointer
   static_assert(sizeof(Pointer) == sizeof(__int128));
 
-  atomic<int> count_{0};
+  ALIGNED atomic<int> count_{0};
 
-  atomic<Pointer> head_;
-  atomic<Pointer> tail_;
-
-  // unordered_set<Node*> garbage_list_;
+  ALIGNED atomic<Pointer> head_;
+  ALIGNED atomic<Pointer> tail_;
 };
 
 #endif  // _CAS_QUEUE_H_
