@@ -1,6 +1,7 @@
 #include "boost_adapter.h"
 #include "cas_queue.h"
 #include "fine_lock_queue.h"
+#include "free_list_adapter.h"
 #include "lock_queue.h"
 #include "queue.h"
 #include "rtm_queue.h"
@@ -118,6 +119,11 @@ TEST_P(ConcurrentQueueTest, BoostAdapterTest) {
 
 TEST_P(ConcurrentQueueTest, LockQueueTest) {
   LockQueue<int> queue;
+  RunTest(&queue);
+}
+
+TEST_P(ConcurrentQueueTest, FreeListAdapterTest) {
+  FreeListAdapter<int> queue;
   RunTest(&queue);
 }
 
