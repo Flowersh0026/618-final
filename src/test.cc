@@ -1,19 +1,18 @@
-#include "boost_adapter.h"
-#include "cas_queue.h"
-#include "fine_lock_queue.h"
-#include "free_list_adapter.h"
-#include "lock_queue.h"
-#include "queue.h"
-#include "rtm_queue.h"
-
-#include "lock_free_allocator.h"
-
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <atomic>
 #include <random>
 #include <thread>
+
+#include "boost_adapter.h"
+#include "cas_queue.h"
+#include "fine_lock_queue.h"
+#include "free_list_adapter.h"
+#include "lock_free_allocator.h"
+#include "lock_queue.h"
+#include "queue.h"
+#include "rtm_queue.h"
 
 class ConcurrentQueueTest
     : public ::testing::TestWithParam<

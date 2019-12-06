@@ -3,6 +3,7 @@
 
 #include <atomic>
 #include "config.h"
+#include "lock_free_allocator.h"
 #include "queue.h"
 
 using namespace std;
@@ -11,7 +12,9 @@ template <typename T>
 class CasQueue : public Queue<T> {
  public:
   CasQueue()
-      : head_(Pointer(new Node(), 0)),
+      : alloc_(),
+        count_(0),
+        head_(Pointer(alloc(), 0)),
         tail_(head_.load(memory_order_relaxed)) {}
 
   ~CasQueue() {
@@ -20,7 +23,7 @@ class CasQueue : public Queue<T> {
       if (ptr.node_) {
         head_.store(ptr.node_->next_.load(std::memory_order_relaxed),
                     std::memory_order_relaxed);
-        delete ptr.node_;
+        dealloc(ptr.node_);  // destruct itself before its member variables
       } else {
         break;
       }
@@ -59,12 +62,12 @@ class CasQueue : public Queue<T> {
 
  public:
   virtual void Push(const T& value) override {
-    Node* new_tail = new Node(value);
+    Node* new_tail = alloc(value);
     PushImpl(new_tail);
   }
 
   virtual void Push(T&& value) override {
-    Node* new_tail = new Node(std::move(value));
+    Node* new_tail = alloc(std::move(value));
     PushImpl(new_tail);
   }
 
@@ -94,7 +97,7 @@ class CasQueue : public Queue<T> {
                   curr_head, Pointer(next.node_, curr_head.tag_ + 1),
                   std::memory_order_release,
                   std::memory_order_relaxed)) {  // commit point
-            // add node to free list
+            dealloc(curr_head.node_);
             count_.fetch_sub(1, std::memory_order_release);
             break;
           }
@@ -121,20 +124,36 @@ class CasQueue : public Queue<T> {
     int tag_;
 
     Pointer() : Pointer(nullptr, 0) {}
-    Pointer(Node* node, int tag) : node_(node), tag_(tag) {}
+    Pointer(Node* node, int tag) : node_(node), tag_(tag) {
+      // confirm that we can use double-word CAS for struct Pointer
+      static_assert(sizeof(Pointer) == sizeof(__int128));
+    }
 
     bool operator==(const Pointer& another) const {
       return this->node_ == another.node_ && this->tag_ == another.tag_;
     }
   };
 
-  // confirm that we can use double-word CAS for struct Pointer
-  static_assert(sizeof(Pointer) == sizeof(__int128));
+  // have to be initialized before the pointers
+  LockFreeAllocator<Node> alloc_;  // memory-safe lock-free allocator
 
-  ALIGNED atomic<int> count_{0};
+  ALIGNED atomic<int> count_;
 
   ALIGNED atomic<Pointer> head_;
   ALIGNED atomic<Pointer> tail_;
+
+  template <typename... Args>
+  Node* alloc(Args&&... args) {
+    using Tr = std::allocator_traits<LockFreeAllocator<Node>>;
+    Node* node = Tr::allocate(alloc_, 1);
+    Tr::construct(alloc_, node, std::forward<Args>(args)...);
+    return node;
+  }
+
+  void dealloc(Node* node) {
+    using Tr = std::allocator_traits<LockFreeAllocator<Node>>;
+    Tr::deallocate(alloc_, node, 1);
+  }
 };
 
 #endif  // _CAS_QUEUE_H_

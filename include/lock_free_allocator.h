@@ -12,7 +12,7 @@ class LockFreeAllocator {
   LockFreeAllocator() noexcept : free_list_() {}
 
   template <class U>
-  LockFreeAllocator(const LockFreeAllocator<U>& /* another */) noexcept
+  LockFreeAllocator(const LockFreeAllocator<U>&) noexcept
       : LockFreeAllocator() {}
 
   ~LockFreeAllocator() {
@@ -31,12 +31,11 @@ class LockFreeAllocator {
       throw std::bad_alloc();  // only support allocate objects one-by-one
     }
     value_type* p = free_list_.Pop();
-    if (p) {
-      return p;
-    } else {
+    if (p == nullptr) {
       // the return pointer of `operator new` is properly aligned
-      return static_cast<value_type*>(::operator new(sizeof(value_type)));
+      p = static_cast<value_type*>(::operator new(sizeof(value_type)));
     }
+    return p;
   }
 
   void deallocate(value_type* p, std::size_t n) noexcept {
