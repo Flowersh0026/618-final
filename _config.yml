@@ -1,4 +1,4 @@
 theme: jekyll-theme-cayman
-title: "Concurrent Distributed Dynamic Sized Worker Queue"
+title: "Concurrent Distributed Dynamic Sized Queue"
 name: &name "Yunjia Wang, Jiaan Dai"
 exclude: [third_party]
