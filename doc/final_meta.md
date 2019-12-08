@@ -11,7 +11,10 @@ geometry: margin=1in
 mainfont: Times New Roman
 monofont: Menlo
 numbersections: true
-header-includes:
-    - \usepackage{subcaption}
-    - \usepackage{float}
+header-includes: |
+    \usepackage{subcaption}
+    \usepackage{float}
+    \makeatletter
+    \def\fps@figure{H}
+    \makeatother
 ...

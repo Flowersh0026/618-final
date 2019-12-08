@@ -14,6 +14,27 @@ Project URL: [`https://flowersh0026.github.io/618-final/`](https://flowersh0026.
 
 ## Effects on Optimization Techniques
 
+We compare the effects of different optimization techniques on RTM queue and CAS queue.
+Below are the comparisons on different versions of them on both push and pop operations.
+
+### RtmQueue push operation
+
+![](../result/opt_RtmQueue_push_rate.png)
+
+### RtmQueue pop operation
+
+![](../result/opt_RtmQueue_push_rate.png)
+
+### CasQueue push operation
+
+![](../result/opt_CasQueue_push_rate.png)
+
+### CasQueue pop operation
+
+![](../result/opt_CasQueue_push_rate.png)
+
+<!-- Below are examples of using subfigures in latex output format.
+
 ```{=latex}
  \begin{figure}[H]
     \begin{subfigure}{0.5\textwidth}
@@ -39,16 +60,13 @@ Project URL: [`https://flowersh0026.github.io/618-final/`](https://flowersh0026.
     \caption{Effects on different optimization techniques (jemalloc and cache line alignment).}
 \end{figure}
  ```
+-->
 
 ## Performance comparison
 
-<!-- You can replace the markdown-style image insertion by the latex-style
-image insertion, which allows using {figure}[H]. -->
 ![Performance comparison on push operations.](../result/push_throughput.png)
 
 ![Performance comparison on pop operations.](../result/pop_throughput.png)
-
-
 
 
 
