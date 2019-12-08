@@ -40,6 +40,7 @@ def preprocess(data):
     data['pop_rate'] = data['pop_count'] / data['elapsed_seconds']
     data['push_rate'] = data['push_count'] / data['elapsed_seconds']
 
+    data = data[data['QueueType'] != 'BoostAdapter']
     return data
 
 
