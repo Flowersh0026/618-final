@@ -1,12 +1,13 @@
 #include "boost_adapter.h"
 #include "cas_queue.h"
 #include "fine_lock_queue.h"
-#include "lock_queue.h"
+// #include "lock_queue.h"
 #include "queue.h"
 #include "rtm_queue.h"
 
 // #include "coarse_lock_queue.h"
 #include "lock_queue.h"
+#include "distributed_queue.h"
 
 
 #include <gmock/gmock.h>
@@ -100,10 +101,10 @@ class ConcurrentQueueTest
   std::vector<std::thread> consumers_;
 };
 
-TEST_P(ConcurrentQueueTest, RtmQueueTest) {
-  RtmQueue<int> queue;
-  RunTest(&queue);
-}
+// TEST_P(ConcurrentQueueTest, RtmQueueTest) {
+//   RtmQueue<int> queue;
+//   RunTest(&queue);
+// }
 
 // TEST_P(ConcurrentQueueTest, CasQueueTest) {
 //   CasQueue<int> queue;
@@ -116,21 +117,27 @@ TEST_P(ConcurrentQueueTest, RtmQueueTest) {
 // }
 
 
-TEST_P(ConcurrentQueueTest, FineQueueTest) {
-  FineLockQueue<int> queue;
+// TEST_P(ConcurrentQueueTest, FineQueueTest) {
+//   FineLockQueue<int> queue;
+//   RunTest(&queue);
+// }
+
+// TEST_P(ConcurrentQueueTest, BoostAdapterTest) {
+//   BoostAdapter<int> queue;
+//   RunTest(&queue);
+// }
+
+
+// TEST_P(ConcurrentQueueTest, LockQueueTest) {
+//   LockQueue<int> queue;
+//   RunTest(&queue);
+// }
+
+TEST_P(ConcurrentQueueTest, DistributedQueueTest) {
+  DistributedQueue<int> queue(8);
   RunTest(&queue);
 }
 
-TEST_P(ConcurrentQueueTest, BoostAdapterTest) {
-  BoostAdapter<int> queue;
-  RunTest(&queue);
-}
-
-
-TEST_P(ConcurrentQueueTest, LockQueueTest) {
-  LockQueue<int> queue;
-  RunTest(&queue);
-}
 
 INSTANTIATE_TEST_SUITE_P(ConcurrentQueueTest, ConcurrentQueueTest,
                          ::testing::Combine(::testing::Values(1, 1000, 1000000),
