@@ -23,8 +23,8 @@ number of items being pushed or popped in a second.
 We set up the experiments using a Multiple Producer Multiple Consumer (MPMC)
 framework. In each experiment, we create equal number of producer and consumer
 threads to repeatedly do the push and pop operations. The number of producer
-threads is from 1 to 16, and the number of consumer threads is also from $1$ to
-$16$. The number of iterations is determined by the Google benchmark library
+threads is from 1 to 16, and the number of consumer threads is also from 1
+to 16. The number of iterations is determined by the Google benchmark library
 (i.e., the size of inputs, typically varying from 100,000 to 7,000,000). When
 the benchmark is running, the producer and consumer threads continuously push
 and pop items to and from the shared concurrent queue. They counts the number
