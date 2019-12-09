@@ -23,8 +23,8 @@ number of items being pushed or popped in a second.
 We set up the experiments using a Multiple Producer Multiple Consumer (MPMC)
 framework. In each experiment, we create equal number of producer and consumer
 threads to repeatedly do the push and pop operations. The number of producer
-threads is from 1 to 16, and the number of consumer threads is also from 1 to
-16. The number of iterations is determined by the Google benchmark library
+threads is from 1 to 16, and the number of consumer threads is also from $1$ to
+$16$. The number of iterations is determined by the Google benchmark library
 (i.e., the size of inputs, typically varying from 100,000 to 7,000,000). When
 the benchmark is running, the producer and consumer threads continuously push
 and pop items to and from the shared concurrent queue. They counts the number
@@ -52,12 +52,12 @@ implemented concurrent queues, including using a better memory allocator
 sharing. We mainly focus on the results of RTM-based queue and CAS-based queue
 here.
 
-### Push Throughput of `RtmQueue`
+### Push Throughput of RtmQueue
 
 First, we shows the comparison of push throughput on RTM-based queue when applying
 different combinations of optimizations.
 
-![Effects of optimizations (push throughput of RTM-based queue).](../result/opt_RtmQueue_push_rate.png){ width=75% }
+![Effects of optimizations (push throughput of RTM-based queue).](../result/opt_RtmQueue_push_rate.png)
 
 We first look at the low-contention region (thread = 1). From the figure, we
 know that using jemalloc is able to significantly improve the performance of
@@ -84,9 +84,9 @@ when false sharing exists. The consistent improvement of the "jemalloc &
 Aligned" version compared with the "Aligned" version in the region from thread
 = 5 to thread 16 partially illustrates our explanation.
 
-### Pop Throughput of `RtmQueue`
+### Pop Throughput of RtmQueue
 
-![Effects of optimizations (pop throughput of RTM-based queue).](../result/opt_RtmQueue_pop_rate.png){ width=75% }
+![Effects of optimizations (pop throughput of RTM-based queue).](../result/opt_RtmQueue_pop_rate.png)
 
 The effects of optimizations on the pop throughput of RTM-based queue are
 similar. The "jemalloc & Aligned" version uniformly outperforms other poorly
@@ -94,22 +94,26 @@ optimized versions. However, from the figure, the "Aligned" version performs
 worse than the baseline version when thread = 1, which is possibly due to the
 high variance nature of microbenchmark.
 
-### Push Throughput of `CasQueue`
+### Push Throughput of CasQueue
 
-![Effects of optimizations (push throughput of CAS-based queue).](../result/opt_CasQueue_push_rate.png){ width=75% }
+![Effects of optimizations (push throughput of CAS-based queue).](../result/opt_CasQueue_push_rate.png)
 
 
 
-### Pop Throughput of `CasQueue`
+### Pop Throughput of CasQueue
 
-![Effects of optimizations (pop throughput of CAS-based queue).](../result/opt_CasQueue_pop_rate.png){ width=75% }
+![Effects of optimizations (pop throughput of CAS-based queue).](../result/opt_CasQueue_pop_rate.png)
 
 
 ## Performance comparison
 
-![Performance comparison on push operations.](../result/push_throughput.png)
+### Push Throughput Comparison
 
-![Performance comparison on pop operations.](../result/pop_throughput.png)
+![Performance comparison on push throughput.](../result/push_throughput.png)
+
+### Pop Throughput Comparison
+
+![Performance comparison on pop throughput.](../result/pop_throughput.png)
 
 
 
