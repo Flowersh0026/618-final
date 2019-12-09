@@ -11,6 +11,7 @@ Yunjia Wang (yunjiaw@), Jiaan Dai (jiaand@)
 * [Checkpoint](doc/checkpoint)
 * [Checkpoint PDF](doc/checkpoint.pdf)
 * [Final Report](doc/final)
+* [Final Report PDF](doc/final.pdf)
 
 ### Schedule
 
@@ -27,7 +28,8 @@ Yunjia Wang (yunjiaw@), Jiaan Dai (jiaand@)
 |                | Explore the implementations of distributed versions (Both)  | Done        |
 | 11/25 -- 12/01 | Implement the fine-grained locked queue (Jiaan)             | Done        |
 |                | Optimize lock-free concurrent queues (Jiaan)                | Done        |
-|                | Implement the distributed versions (Yunjia)                 | In progress |
-| 12/02 -- 12/08 | Benchmark and performance analysis (Both)                   | In progress |
-|                | Finish final report (Both)                                  |             |
-|                | Finish poster (Both)                                        |             |
+|                | Implement lock-free memory allocator (Jiaan)                | Done        |
+|                | Implement the distributed versions (Yunjia)                 | Done        |
+| 12/02 -- 12/08 | Benchmark and performance analysis (Both)                   | Done        |
+|                | Finish final report (Both)                                  | In progress |
+|                | Finish poster (Both)                                        | Done        |
