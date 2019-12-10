@@ -60,6 +60,20 @@ and the spawned threads will perform the task of pushing or poping as we assigne
 Further details of how experiments are set up could be found in results section
 below.
 
+## Algorithms
+
+We implement 4 versions of concurrent queues, including lock-free CAS-based
+queue (`CasQueue`), lock-free queue (`RtmQueue`) using Intel TSX's Restricted
+Transactional Memory (RTM), and coarse-grained (`LockQueue`) and fine-grained
+(`FineLockQueue`) lock queue. The coarse-grained queue simply uses a global
+mutex to protect the member variables. The fine-grained lock queue uses the
+two-lock algorithm described in [1], and the RTM-based queue extends from the
+fine-grained lock version with an additional optimistic path using
+transactional memory. The algorithm for CAS-based queue is from [1]. To handle
+the ABA problem, we use tagged pointer with double-word compare-and-swap (CAS)
+provided by libatomic (gcc). Also, to achieve memory safety, we implement a
+lock-free stack as the free list, and wrap it to be a memory allocator that is
+used for memory allocation and reclamation in the CAS-based queue.
 
 ## Optimization Steps
 
