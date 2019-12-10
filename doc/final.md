@@ -2,11 +2,64 @@ Project URL: [`https://flowersh0026.github.io/618-final/`](https://flowersh0026.
 
 # Summary
 
+We implemented four versions of concurrent dynamic sized FIFO queue including
+coarse-grained lock version, fine-grained lock version, lock-free (CAS-based)
+version and transactional memory (RTM-based) version, compared the performance
+of the four implementations and analyzed the results. We further studied possible
+designs of distributed queue, implemented a simple version locally and compared
+its performance with centralized version.
+
 
 # Background
 
+Dynamic sized queue is a commonly used basic data structure. A concurrent multiple
+producer multiple consumer queue can be useful in many parallel scenarios.
+There are three base operations for a FIFO queue including push, pop and front.
+All of the base operations can be done in O(1). Push and pop would modify the
+queue by inserting/removing elements to/from tail/head, while top will only do
+a read operation on the head.
+
+In this project, we studied how different methods of synchronization influence
+the performance of a concurrent dynamic sized queue. We only studied the push
+and pop operations, because the top operation is relatively trivial and does not
+impose challenge on synchronization. We tested the correctness on push and pop
+operations and benchmarked the throughput (items per second) on push and pop
+operations. The details of test and benchmark will be described further in the
+results section.
+
+In addition to a centralized queue, under scenarios that the queue needs to
+serve large amount of works, distributed queue could help a lot when single
+machine could not hold all the data. We explored possible designs (structures)
+of a distributed queue as an extension to centralized queue.
+
 
 # Approach
+
+## Technologies
+
+We mainly use the GHC machines as our development platform, and we use C++ as
+the main programming language. C++ provides good zero-cost abstractions that
+allow us to implement complicated data structures with less efforts, and it also
+gives us full control on the platform and runtime.
+
+## Parallization
+
+The concurrent queue structure is inherently closely related to parallization.
+Both our tests and benchmarks are building on a Multiple Producer Multiple
+Consumer (MPMC) framework that we set up, which parallized to perform push and
+pop operations on the queue. The benchmark library we used will spawn threads
+and the spawned threads will perform the task of pushing or poping as we assigned.
+Further details of how experiments are set up could be found in results section
+below.
+
+
+## Optimization Steps
+
+We started with simple initial version of implementations. After benchmarking
+and analyzing the performance of initial implementations, we try to optimize the
+implementation in two aspects including using a better memory allocator 
+(jemalloc [3]) and conducing cache line alignment on variables to avoid false
+sharing. Further details could be found in the results section below.
 
 
 # Results
@@ -226,6 +279,49 @@ implementing a fixed-size memory pool to further improve the performance.
 
 ## Distributed Extension
 
+Beyond the study of synchronization on a FIFO queue on a single machine, we
+extended the project to further explore queue on distributed systems. Throughout
+our study, we mainly learnt about two possible structures as shown below.
+
+![Distributed Queue Structure Figure 1](../result/dq_1.png)
+![Distributed Queue Structure Figure 2](../result/dq_2.png)
+
+The first one, shown in Figure 1, has the client contacted to the centralized
+server, which controls the whole distributed set of queues as well as load
+balancing. The other one is more distributed as shown in Figure 2. Although the 
+centralized server will still controls the load balancing of all sub queues and
+be responsible for push, each client will pop out from a sub server it connected
+to. Due to time limitation, we only designed the interface and completed a
+localized version implementation for the first structure. A lock is used in the
+centralized server for synchronization. Each sub-queue server maintains an
+RTM-based queue. 
+
+Since we implemented it locally and the queue is eventually running on a single
+machine instead of a real distributed system, we evaluate our implementation on
+the extra contention added by the centralized server and the load balancing. The
+load balancing policy we used is simply Round Robin because there is no network
+load variance in the test. The benchmark framework used in this section is
+identical to the one mentioned above. Since a RTM-based queue is used in each
+sub-queue server, we compared the benchmark result of distributed queue with
+the benchmark result of RTM-based queue. The comparison is shown below.
+
+![Performance comparison on push throughput.](../result/compdistributed_push_throughput.png)
+![Performance comparison on pop throughput.](../result/compdistributed_pop_throughput.png)
+
+For both push and pop performance, in the low-contention region (thread = 1),
+since we used a coarse-grained lock in the centralized server, the distributed
+queue does not outperform as RTM-based queue does. The trending shape of
+distributed queue is indeed similar to that of coarsed-grained lock queue. To
+further improve (i.e. decrease contention cost), a fine-grained lock or a lock-
+free design should be used in the centralized server. Nevertheless, more or less,
+the centralized server would bring in an additional synchronization cost which
+could not be avoided.
+
+However, for a distributed queue run a real distributed system over network, we
+believe that the network communication costs are likely to overweight the
+synchronization cost on each single server.
+
+
 
 
 # References
@@ -258,4 +354,17 @@ List of Jiaan's work:
     9. Benchmark and analysis (cooperate)
     10. Final report (cooperate)
     11. Poster (cooperate)
+
+
+List of Yunjia's work:
+    1. Coarse-grained lock queue
+    2. Intial implementation of lock-free (CAS-based) queue
+    3. Benchmark design and analysis (cooperate)
+    4. Distributed queue structure study and design (cooperate)
+    5. Distributed queue implementation
+    6. Proposal writeup (cooperate)
+    7. Final report writeup (cooperate)
+    8. Poster (cooperate)
+
+Distribution: 60%-40% ?
 -->
