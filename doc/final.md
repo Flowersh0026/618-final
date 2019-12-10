@@ -348,33 +348,35 @@ fifteenth annual ACM symposium on Principles of distributed computing (PODC
 
 [5] Folly: Facebook Open-source Library. https://github.com/facebook/folly/
 
-<!-- TODO: List of work section (required in the final report)
+
+# List of Work by Students
 
 List of Jiaan's work:
-    1. RTM-based queue
-    2. Fine-grained lock queue
-    3. Unit test for correctness
-    4. Optimization and analysis
-    5. Tagged pointer and double-word CAS wrapper
-    6. Lock-free memory allocator (lock-free stack) for CAS-based queue
-    7. Checkpoint report
 
-    8. Proposal (cooperate)
-    9. Benchmark and analysis (cooperate)
-    10. Final report (cooperate)
-    11. Poster (cooperate)
-
+1. RTM-based queue
+2. Fine-grained lock queue
+3. Unit test for correctness
+4. Optimization and analysis
+5. Tagged pointer and double-word CAS wrapper
+6. Lock-free memory allocator (lock-free stack) for CAS-based queue
+7. Checkpoint report
+8. Proposal (cooperate)
+9. Benchmark and analysis (cooperate)
+10. Final report (cooperate)
+11. Poster (cooperate)
 
 List of Yunjia's work:
-    1. Coarse-grained lock queue
-    2. Intial implementation of lock-free (CAS-based) queue
-    3. Benchmark design and analysis (cooperate)
-    4. Distributed queue structure study and design (cooperate)
-    5. Distributed queue implementation
-    6. Proposal writeup (cooperate)
-    7. Final report writeup (cooperate)
-    8. Poster (cooperate)
 
+1. Coarse-grained lock queue
+2. Intial implementation of lock-free (CAS-based) queue
+3. Benchmark design and analysis (cooperate)
+4. Distributed queue structure study and design (cooperate)
+5. Distributed queue implementation
+6. Proposal writeup (cooperate)
+7. Final report writeup (cooperate)
+8. Poster (cooperate)
 
-Distribution: 60%-40%
--->
+Distribution of total credit:
+
+60% (Jiaan) -- 40% (Yunjia)
+
