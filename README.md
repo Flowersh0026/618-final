@@ -31,5 +31,5 @@ Yunjia Wang (yunjiaw@), Jiaan Dai (jiaand@)
 |                | Implement lock-free memory allocator (Jiaan)                | Done        |
 |                | Implement the distributed versions (Yunjia)                 | Done        |
 | 12/02 -- 12/08 | Benchmark and performance analysis (Both)                   | Done        |
-|                | Finish final report (Both)                                  | In progress |
+|                | Finish final report (Both)                                  | Done        |
 |                | Finish poster (Both)                                        | Done        |
