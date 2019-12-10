@@ -19,6 +19,14 @@ All of the base operations can be done in O(1). Push and pop would modify the
 queue by inserting/removing elements to/from tail/head, while top will only do
 a read operation on the head.
 
+As a concurrent data structure, the most computationally expensive part is the
+synchronization on the key variables, for example, ensuring the head and tail
+pointers are correct. Besides the updates on these key variables, other
+operations can be parallelized across the threads that use the concurrent
+queue. Thus, the efficiency on these synchronization is important to improve
+the overall performance of the concurrent queue under the multi-threaded
+environment.
+
 In this project, we studied how different methods of synchronization influence
 the performance of a concurrent dynamic sized queue. We only studied the push
 and pop operations, because the top operation is relatively trivial and does not
@@ -56,11 +64,14 @@ below.
 ## Optimization Steps
 
 We started with simple initial version of implementations. After benchmarking
-and analyzing the performance of initial implementations, we try to optimize the
-implementation in two aspects including using a better memory allocator 
+and analyzing the performance of initial implementations, we try to optimize
+the implementation in two aspects including using a better memory allocator
 (jemalloc [3]) and conducing cache line alignment on variables to avoid false
-sharing. Further details could be found in the results section below.
-
+sharing. We did comparisons on these two optimization approaches and confirmed
+that they can improve the performance. Then we applied them in all concurrent
+queues we've implemented, and conducted our experiments based on the fully
+optimized versions.  The details and the analysis of the optimization methods
+are included in the result section below.
 
 # Results
 
@@ -288,13 +299,13 @@ our study, we mainly learnt about two possible structures as shown below.
 
 The first one, shown in Figure 1, has the client contacted to the centralized
 server, which controls the whole distributed set of queues as well as load
-balancing. The other one is more distributed as shown in Figure 2. Although the 
+balancing. The other one is more distributed as shown in Figure 2. Although the
 centralized server will still controls the load balancing of all sub queues and
 be responsible for push, each client will pop out from a sub server it connected
 to. Due to time limitation, we only designed the interface and completed a
 localized version implementation for the first structure. A lock is used in the
 centralized server for synchronization. Each sub-queue server maintains an
-RTM-based queue. 
+RTM-based queue.
 
 Since we implemented it locally and the queue is eventually running on a single
 machine instead of a real distributed system, we evaluate our implementation on
@@ -320,8 +331,6 @@ could not be avoided.
 However, for a distributed queue run a real distributed system over network, we
 believe that the network communication costs are likely to overweight the
 synchronization cost on each single server.
-
-
 
 
 # References
@@ -366,5 +375,6 @@ List of Yunjia's work:
     7. Final report writeup (cooperate)
     8. Poster (cooperate)
 
-Distribution: 60%-40% ?
+
+Distribution: 60%-40%
 -->
