@@ -1,21 +1,18 @@
-#include "boost_adapter.h"
-#include "cas_queue.h"
-#include "fine_lock_queue.h"
-// #include "lock_queue.h"
-#include "queue.h"
-#include "rtm_queue.h"
-
-// #include "coarse_lock_queue.h"
-#include "lock_queue.h"
-#include "distributed_queue.h"
-
-
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <atomic>
 #include <random>
 #include <thread>
+
+#include "boost_adapter.h"
+#include "cas_queue.h"
+#include "fine_lock_queue.h"
+#include "free_list_adapter.h"
+#include "lock_free_allocator.h"
+#include "lock_queue.h"
+#include "queue.h"
+#include "rtm_queue.h"
 
 class ConcurrentQueueTest
     : public ::testing::TestWithParam<
@@ -101,40 +98,46 @@ class ConcurrentQueueTest
   std::vector<std::thread> consumers_;
 };
 
-// TEST_P(ConcurrentQueueTest, RtmQueueTest) {
-//   RtmQueue<int> queue;
-//   RunTest(&queue);
-// }
+TEST_P(ConcurrentQueueTest, RtmQueueTest) {
+  RtmQueue<int> queue;
+  RunTest(&queue);
+}
 
-// TEST_P(ConcurrentQueueTest, CasQueueTest) {
-//   CasQueue<int> queue;
-//   RunTest(&queue);
-// }
+TEST_P(ConcurrentQueueTest, CasQueueTest) {
+  CasQueue<int> queue;
+  RunTest(&queue);
+}
 
-// TEST_P(ConcurrentQueueTest, CoarseQueueTest) {
-//   CoarseLockQueue<int> queue;
-//   RunTest(&queue);
-// }
-
-
-// TEST_P(ConcurrentQueueTest, FineQueueTest) {
-//   FineLockQueue<int> queue;
-//   RunTest(&queue);
-// }
-
-// TEST_P(ConcurrentQueueTest, BoostAdapterTest) {
-//   BoostAdapter<int> queue;
-//   RunTest(&queue);
-// }
+TEST_P(ConcurrentQueueTest, CoarseQueueTest) {
+  CoarseLockQueue<int> queue;
+  RunTest(&queue);
+}
 
 
-// TEST_P(ConcurrentQueueTest, LockQueueTest) {
-//   LockQueue<int> queue;
-//   RunTest(&queue);
-// }
+TEST_P(ConcurrentQueueTest, FineQueueTest) {
+  FineLockQueue<int> queue;
+  RunTest(&queue);
+}
+
+TEST_P(ConcurrentQueueTest, BoostAdapterTest) {
+  BoostAdapter<int> queue;
+  RunTest(&queue);
+}
+
+
+TEST_P(ConcurrentQueueTest, LockQueueTest) {
+  LockQueue<int> queue;
+  RunTest(&queue);
+}
 
 TEST_P(ConcurrentQueueTest, DistributedQueueTest) {
   DistributedQueue<int> queue(8);
+  RunTest(&queue);
+}
+
+
+TEST_P(ConcurrentQueueTest, FreeListAdapterTest) {
+  FreeListAdapter<int> queue;
   RunTest(&queue);
 }
 
@@ -143,3 +146,77 @@ INSTANTIATE_TEST_SUITE_P(ConcurrentQueueTest, ConcurrentQueueTest,
                          ::testing::Combine(::testing::Values(1, 1000, 1000000),
                                             ::testing::Values(1, 32),
                                             ::testing::Values(1, 32)));
+
+class LockFreeAllocatorTest : public ::testing::Test {
+ public:
+  struct Node {
+    char a;
+    int b;
+    float c;
+    double d;
+    Node* ptr;
+
+    Node() : a('a'), b(1), c(3.14), d(4.0), ptr(nullptr) {}
+  };
+};
+
+TEST_F(LockFreeAllocatorTest, AllocatorTest) {
+  LockFreeAllocator<Node> alloc;
+  Node* p = alloc.allocate(1);
+  ASSERT_NE(p, nullptr);
+  alloc.deallocate(p, 1);
+  Node* q = alloc.allocate(1);
+  ASSERT_NE(q, nullptr);
+  EXPECT_EQ(q, p);
+  alloc.deallocate(q, 1);
+}
+
+TEST_F(LockFreeAllocatorTest, AllocatorTraitsTest) {
+  using alloc_tr = std::allocator_traits<LockFreeAllocator<Node>>;
+  LockFreeAllocator<Node> alloc;
+
+  Node* p = alloc_tr::allocate(alloc, 1);
+  ASSERT_NE(p, nullptr);
+
+  alloc_tr::construct(alloc, p);
+  EXPECT_EQ(p->a, 'a');
+  EXPECT_EQ(p->b, 1);
+  EXPECT_FLOAT_EQ(p->c, 3.14);
+  EXPECT_DOUBLE_EQ(p->d, 4.0);
+  EXPECT_EQ(p->ptr, nullptr);
+
+  // change it
+  p->a = 'b';
+  p->b = -1;
+  p->c = -4.0;
+  p->d = -100.1;
+  p->ptr = p;
+
+  EXPECT_EQ(p->a, 'b');
+  EXPECT_EQ(p->b, -1);
+  EXPECT_FLOAT_EQ(p->c, -4.0);
+  EXPECT_DOUBLE_EQ(p->d, -100.1);
+  EXPECT_EQ(p->ptr, p);
+
+  alloc_tr::deallocate(alloc, p, 1);
+
+  Node* q = alloc_tr::allocate(alloc, 1);
+  ASSERT_NE(q, nullptr);
+  EXPECT_EQ(q, p);
+
+  // should not be the default values
+  EXPECT_NE(q->a, 'a');
+  EXPECT_NE(q->b, 1);
+  EXPECT_NE(q->c, 3.14);
+  EXPECT_NE(q->d, 4.0);
+  EXPECT_NE(q->ptr, nullptr);
+
+  alloc_tr::construct(alloc, q);
+  EXPECT_EQ(q->a, 'a');
+  EXPECT_EQ(q->b, 1);
+  EXPECT_FLOAT_EQ(q->c, 3.14);
+  EXPECT_DOUBLE_EQ(q->d, 4.0);
+  EXPECT_EQ(q->ptr, nullptr);
+
+  alloc_tr::deallocate(alloc, q, 1);
+}

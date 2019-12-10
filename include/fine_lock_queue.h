@@ -1,9 +1,9 @@
 #ifndef _FINE_LOCK_QUEUE_H_
 #define _FINE_LOCK_QUEUE_H_
 
-#include "queue.h"
-
 #include <mutex>
+#include "config.h"
+#include "queue.h"
 
 template <typename T>
 class FineLockQueue : public Queue<T> {

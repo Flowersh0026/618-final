@@ -7,4 +7,10 @@ sftp-config.json
 =======
 /debug/
 /release/
+<<<<<<< HEAD
 >>>>>>> 706d2aa3fee33177cb9caa0d875fd0a2190dad54
+=======
+.DS_Store
+__pycache__/
+.ipynb_checkpoints/
+>>>>>>> 5ad474730a349eee14b636e360f51243fbfa5090

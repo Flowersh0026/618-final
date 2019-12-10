@@ -1,10 +1,10 @@
 #ifndef _LOCK_QUEUE_H_
 #define _LOCK_QUEUE_H_
 
-#include "queue.h"
-
 #include <atomic>
 #include <mutex>
+#include "config.h"
+#include "queue.h"
 
 using namespace std;
 

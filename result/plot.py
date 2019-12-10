@@ -20,7 +20,7 @@ def parse_queue_type(name):
 
 
 def rate_format(rate, pos):
-    return '{:.3f} M/s'.format(rate * 1e-6)
+    return '{:.1f} M/s'.format(rate * 1e-6)
 
 
 # data processing
@@ -40,21 +40,23 @@ def preprocess(data):
     data['pop_rate'] = data['pop_count'] / data['elapsed_seconds']
     data['push_rate'] = data['push_count'] / data['elapsed_seconds']
 
+    data = data[data['QueueType'] != 'BoostAdapter']
     return data
 
 
 def plot_pop_rate(data):
-    plt.figure()
+    plt.figure(dpi=1000)
     ax = sns.lineplot(x='num_thread', y='pop_rate', hue='QueueType', data=data)
     ax.yaxis.set_major_formatter(FuncFormatter(rate_format))
     plt.legend(bbox_to_anchor=(1, 1))
     plt.xlabel('Number of thread')
     plt.ylabel('Pop throughput (M/s)')
+    plt.ylim(bottom=0, top=5500000)
     plt.savefig('pop_throughput', bbox_inches='tight')
 
 
 def plot_push_rate(data):
-    plt.figure()
+    plt.figure(dpi=1000)
     ax = sns.lineplot(x='num_thread',
                       y='push_rate',
                       hue='QueueType',
@@ -63,6 +65,7 @@ def plot_push_rate(data):
     plt.legend(bbox_to_anchor=(1, 1))
     plt.xlabel('Number of thread')
     plt.ylabel('Push throughput (M/s)')
+    plt.ylim(bottom=0, top=5500000)
     plt.savefig('push_throughput', bbox_inches='tight')
 
 

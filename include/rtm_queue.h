@@ -1,11 +1,11 @@
 #ifndef _RTM_QUEUE_H_
 #define _RTM_QUEUE_H_
 
-#include "queue.h"
-
 #include <immintrin.h>
 #include <atomic>
 #include <mutex>
+#include "config.h"
+#include "queue.h"
 
 template <typename T>
 class RtmQueue : public Queue<T> {
