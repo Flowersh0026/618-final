@@ -1,10 +1,11 @@
 #ifndef _DISTRIBUTED_QUEUE_H_
 #define _DISTRIBUTED_QUEUE_H_
 
-#include "queue.h"
 #include <vector>
 #include <atomic>
 #include <mutex>
+#include "queue.h"
+#include "rtm_queue.h"
 
 using namespace std;
 
@@ -65,7 +66,7 @@ class DistributedQueue : public Queue<T> {
   void SetNodeList(vector<DistributedQueue<T>*> list, int id) {
     id_ = id;
     queues_ = vector<DistributedQueue<T>*>(list);
-  } 
+  }
 
  private:
   bool is_master_;    // Current server is master server

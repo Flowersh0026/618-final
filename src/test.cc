@@ -7,6 +7,7 @@
 
 #include "boost_adapter.h"
 #include "cas_queue.h"
+#include "distributed_queue.h"
 #include "fine_lock_queue.h"
 #include "free_list_adapter.h"
 #include "lock_free_allocator.h"
@@ -108,12 +109,6 @@ TEST_P(ConcurrentQueueTest, CasQueueTest) {
   RunTest(&queue);
 }
 
-TEST_P(ConcurrentQueueTest, CoarseQueueTest) {
-  CoarseLockQueue<int> queue;
-  RunTest(&queue);
-}
-
-
 TEST_P(ConcurrentQueueTest, FineQueueTest) {
   FineLockQueue<int> queue;
   RunTest(&queue);
@@ -123,7 +118,6 @@ TEST_P(ConcurrentQueueTest, BoostAdapterTest) {
   BoostAdapter<int> queue;
   RunTest(&queue);
 }
-
 
 TEST_P(ConcurrentQueueTest, LockQueueTest) {
   LockQueue<int> queue;
@@ -135,12 +129,10 @@ TEST_P(ConcurrentQueueTest, DistributedQueueTest) {
   RunTest(&queue);
 }
 
-
 TEST_P(ConcurrentQueueTest, FreeListAdapterTest) {
   FreeListAdapter<int> queue;
   RunTest(&queue);
 }
-
 
 INSTANTIATE_TEST_SUITE_P(ConcurrentQueueTest, ConcurrentQueueTest,
                          ::testing::Combine(::testing::Values(1, 1000, 1000000),

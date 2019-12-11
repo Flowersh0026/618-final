@@ -2,11 +2,11 @@
 
 #include "boost_adapter.h"
 #include "cas_queue.h"
+#include "distributed_queue.h"
 #include "fine_lock_queue.h"
 #include "lock_queue.h"
 #include "queue.h"
 #include "rtm_queue.h"
-#include "distributed_queue.h"
 
 template <class T>
 static void QueuePushBenchmark(benchmark::State& state) {
@@ -101,11 +101,12 @@ void MpmcBenchmark(benchmark::State& state) {
   }
 }
 
-// BENCHMARK_TEMPLATE(MpmcBenchmark, BoostAdapter<int>)
-//     ->DenseThreadRange(2, 32, 2);
-// BENCHMARK_TEMPLATE(MpmcBenchmark, CasQueue<int>)->DenseThreadRange(2, 32, 2);
-// BENCHMARK_TEMPLATE(MpmcBenchmark, FineLockQueue<int>)
-//     ->DenseThreadRange(2, 32, 2);
-// BENCHMARK_TEMPLATE(MpmcBenchmark, LockQueue<int>)->DenseThreadRange(2, 32, 2);
+BENCHMARK_TEMPLATE(MpmcBenchmark, BoostAdapter<int>)
+    ->DenseThreadRange(2, 32, 2);
+BENCHMARK_TEMPLATE(MpmcBenchmark, CasQueue<int>)->DenseThreadRange(2, 32, 2);
+BENCHMARK_TEMPLATE(MpmcBenchmark, FineLockQueue<int>)
+    ->DenseThreadRange(2, 32, 2);
+BENCHMARK_TEMPLATE(MpmcBenchmark, LockQueue<int>)->DenseThreadRange(2, 32, 2);
 BENCHMARK_TEMPLATE(MpmcBenchmark, RtmQueue<int>)->DenseThreadRange(2, 32, 2);
-BENCHMARK_TEMPLATE(MpmcBenchmark, DistributedQueue<int>)->DenseThreadRange(2, 32, 2);
+BENCHMARK_TEMPLATE(MpmcBenchmark, DistributedQueue<int>)
+    ->DenseThreadRange(2, 32, 2);
